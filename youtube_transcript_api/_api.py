@@ -145,6 +145,12 @@ class YouTubeTranscriptApi(object):
         transcript_list, metadata = cls.list_transcripts_custom(video_id, proxies, cookies)
         return transcript_list.find_transcript(languages).fetch(), metadata
 
+    @classmethod
+    def get_manual_transcript_custom(cls, video_id, languages=('en',), proxies=None, cookies=None):
+        assert isinstance(video_id, str), "`video_id` must be a string"
+        transcript_list, metadata = cls.list_transcripts_custom(video_id, proxies, cookies)
+        return transcript_list.find_manually_created_transcript(languages).fetch(), metadata
+
     
     @classmethod
     def _load_cookies(cls, cookies, video_id):
