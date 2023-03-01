@@ -8,7 +8,7 @@ if sys.version_info.major == 2: # pragma: no cover
 import json
 
 from xml.etree import ElementTree
-
+from bs4 import BeautifulSoup
 import re
 
 from requests import HTTPError
@@ -46,6 +46,24 @@ class TranscriptListFetcher(object):
             video_id,
             self._extract_captions_json(self._fetch_video_html(video_id), video_id)
         )
+
+    def fetch_custom(self, video_id):
+        source_html = self._fetch_video_html(video_id)
+
+        soup = BeautifulSoup(source_html, 'html.parser')
+        metadata = {
+            'title': soup.find('title').text,
+            'datePublished': soup.find(itemprop="datePublished").get("content"),
+            'uploadDate': soup.find(itemprop="uploadDate").get("content"),
+            'categories': soup.find(itemprop="genre").get("content"),
+            'keywords': soup.find("meta", {"name": "keywords"}).get("content")
+        }
+
+        return TranscriptList.build(
+            self._http_client,
+            video_id,
+            self._extract_captions_json(source_html, video_id)
+        ), metadata
 
     def _extract_captions_json(self, html, video_id):
         splitted_html = html.split('"captions":')

@@ -71,6 +71,14 @@ class YouTubeTranscriptApi(object):
             return TranscriptListFetcher(http_client).fetch(video_id)
 
     @classmethod
+    def list_transcripts_custom(cls, video_id, proxies=None, cookies=None):
+        with requests.Session() as http_client:
+            if cookies:
+                http_client.cookies = cls._load_cookies(cookies, video_id)
+            http_client.proxies = proxies if proxies else {}
+            return TranscriptListFetcher(http_client).fetch_custom(video_id)
+
+    @classmethod
     def get_transcripts(cls, video_ids, languages=('en',), continue_after_error=False, proxies=None, cookies=None):
         """
         Retrieves the transcripts for a list of videos.
@@ -130,6 +138,13 @@ class YouTubeTranscriptApi(object):
         """
         assert isinstance(video_id, str), "`video_id` must be a string"
         return cls.list_transcripts(video_id, proxies, cookies).find_transcript(languages).fetch()
+
+    @classmethod
+    def get_transcript_custom(cls, video_id, languages=('en',), proxies=None, cookies=None):
+        assert isinstance(video_id, str), "`video_id` must be a string"
+        transcript_list, metadata = cls.list_transcripts_custom(video_id, proxies, cookies)
+        return transcript_list.find_transcript(languages).fetch(), metadata
+
     
     @classmethod
     def _load_cookies(cls, cookies, video_id):
